@@ -1,0 +1,135 @@
+---
+title: "Spine simulation User's Guide"
+author: "Sergio Luengo-Sanchez et al."
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Spine simulation}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+# 3DSpineMC User's Guide
+
+## Description
+
+Dendritic spines are small membranous protusions. They are receptors of excitatory synapses placed on the surface of some neuronal
+dendrites. Their morphology have captured the attention of neuroscientific community because it has been associated with brain funcionality. For example, it has been claimed that thin spines contribute to learning, while the biggest and steady spines are linked to the memory process. Disturbances of their morphology or density have been related to mental disorders such as schizophrenia, dementia or mental retardation. Thus, the clustering of dendritic spines is an interest approach to better understand the previously describe relation between morphology and functionality. The present R package provides a method to cluster and analize 3D dendritic spines according to their morphology.
+
+## Prerequirements
+
+This software has been developed as an R package. Consequently, it is needed an R enviroment and internet connectivity to download additional package dependencies. R software can be downloaded from <http://cran.rstudio.com/index.html>. We suggested to install 64 bits version of R (if applicable) and RStudio (<https://www.rstudio.com/products/rstudio/download/>). 
+
+## Package installation
+Some R packages are needed to perform some specific tasks releated with 3D processing, data management, or modeling. They must be installed through the command `install.packages("name_of_the_package")` to be able to use 3DSpineMC. The R dependencies of the package are:
+
+|Package|Version|License|
+|-------|-------|-------|
+|   Rcpp| 0.12.9| GPL2/3|
+|   Rvcg| 0.0.15| GPL2/3|
+|geometry| 0.3.6|   GPL3|
+|Morpho |2.4.1.1|   GPL2|
+|data.table|1.10.0| GPL3|
+| mclust|  5.2.3| GPL2/3|
+|foreign| 0.8.69| GPL2/3|
+|    rgl|   0.98| GPL2/3|
+|   ROSE|  0.0.3|   GPL2|
+|   MASS| 7.3.47| GPL2/3|
+|tmvtnorm|1.4.10| GPL2/3|
+|ggplot2|2.2.2.1|   GPL2|
+| MixSim|  1.1.3| GPL2/3|
+| scales|  0.5.0|    MIT|
+
+Updated versions of the R dependencies packages should be supported.
+
+3DSpineMC can be downloaded from [SpineMC](http://cig.fi.upm.es/sites/default/files/software/SpineMC/SpineMC_0.1.tar.gz). Once you have the file in you computer you can install the package introducing the next line into the R console:
+
+```{r,eval=F}
+install.packages("path/to/file/SpineMC_0.1.tar.gz", repos = NULL, type="source")
+```
+
+Finally, to have accessed to the functionalities of 3DSpineMC you must load the package with the command:
+
+```{r,message=FALSE}
+library(spineSimulation)
+```
+
+After that, 3DSpineMC is loaded  in the R workspace so you can start to cluster dendritic spines and analyze the results. In the next section we show some cases of use to exploit the possibilities that the package provides. To test the package, a model and a dataset of morphological features (with some added white noise) are included as part of the package to try the functionalities.
+
+## Using 3DSpineMC package
+Lets start writing `?SpineMC` into the R console. The page that appears in front of you provides general information about the package. Next, if you click on the hyperlink *Index* at the end of the page you will be redirected to the index page where you can see all the functions of the software and a short description of each one of them. If you click on any of them, it is shown an extended description of the function and the parameters.
+
+### Clustering
+The common executing flow is based on obtaining a probabilistic clustering from the features computed on the surface of the spines with multiresolution Reeb graph. This dataset can be generated from the library [3DSpineMFE](https://github.com/ComputationalIntelligenceGroup/3DSpineMFE). Given a dataset, the model is computed according to the next line:
+
+```{r,eval=FALSE}
+model <- spineClustering(csvSpines = system.file("extdata", "data.csv", package = "SpineMC"), numClusters = c(2:10), scale = F)
+```
+
+This computation can take several days when the dataset has several thousands of rows. Also enable the `scale` flag can increase the computational time considerably.
+
+### Results
+The previous computation returns as result a probabilistic model that contains the probability of belonging of each spine to each cluster. It is an `mclust` object (see [mclust](https://cran.r-project.org/web/packages/mclust/vignettes/mclust.html) for more information). Some knowledge about the groups of spines can be extracted from it.
+
+For example it can be obtained an histogram of the number of spines by cluster running:
+```{r,fig.width=7.2,fig.height=5}
+  clusters<-paste("Cluster",1:model$G)
+  distribution<-as.numeric(table(model$classification))
+   dfDistribution<-data.frame(values=distribution,clusters=clusters)
+  dfDistribution$values<-as.numeric(as.character(distribution))
+
+  ggplot(dfDistribution,aes(clusters,values,fill=as.factor(clusters))) +
+    geom_bar(stat="identity")+xlab("Cluster distribution") + ylab("Num spines")  + guides(fill=guide_legend(title=NULL)) + theme(plot.title = element_text(lineheight = .8, face = "bold", size=20), axis.title.x = element_text(face="bold",size=16), axis.title.y =element_text(face="bold",size=16), axis.text =element_text(size=12), legend.text =element_text(size=12))
+```
+
+Also it can be checked the degree of membership of each spine to each cluster. Each row represents one spine and its cells are the probability of membership to the cluster in each column. The sum of all the values of a row is 1.  To obtain the membership probability run:
+```{r}
+#Get membership probability
+membership <- data.frame(model$z)
+colnames(membership) <- paste("Cluster",1:model$G)
+
+#Show ten first
+membership[1:10, ]
+
+```
+
+Also it is possible to export spines by its cluster to csv file for future research. Just run the following lines:
+```{r, eval=F}
+#Export data of dendritic spines of cluster 1 to a temporal directory.
+temp_path<-tempdir()
+write.csv(model$data[model$classification==1,],file="temp_path/cluster1.csv")
+```
+
+### MDS
+
+To make visualization and interpretation of the groups of dendritic spines easier, distance between clusters in a n-dimensional space can be scaled to a 2-dimensional space with multidimensional scaling. It represents the similarity between the morphology of the clusters. Clusters that are close in the MDS plot present analogous shapes. Additionally, in those cases where the cluster is represented just as a point that means that all the spines in the cluster belongs to that cluster with a probability close to 1. However, when there is a continuum of points between two clusters, it suggest that there are some spines whose morphology is a mix of the two clusters and cannot be assigned to any of them certainly.  
+
+```{r,fig.width=7.2,fig.height=7.2}
+MDS<-computeMDS(model,2)
+plotMDS(model,MDS)
+```
+
+### Overlapping
+
+Ideally, clustering should find well defined clusters. Thus, overlapping between clusters is undesirable. To measure the overlapping between pairs of clusters the next function can be applied:
+
+```{r,eval=F}
+computeOverlapping(model)
+```
+As result a table is generated where each value is the degree of overlapping between each pair of cluster where 1 is total overlapping and 0 that there is not overlap at all. As it can be expected, the diagonal of the table is 1 in all cases because it is measuring the overlapping of each cluster with itself.
+```{r kable, echo=F}
+library(knitr)
+kable(computeOverlapping(model))
+```
+
+### BIC score
+
+BIC score is the heuristic score used by the algorithm to select the number of clusters. The higher is the score, the better is the cluster. To plot the BIC score obtained for each number of the clusters evaluated during the clustering process you can run.
+
+```{r,fig.width=7.2,fig.height=7.2}
+#Plot the BIC score by the number of cluster and their model name.
+plotBIC(model)
+
+#Show the number of clusters that maximize BIC
+print(paste("The number of clusters is",model$G))
+```
