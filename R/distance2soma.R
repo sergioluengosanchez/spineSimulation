@@ -112,9 +112,6 @@ distance2somaDistribution<-function(model,distanceCSV="data/distanceSpines2soma.
   #Apicales hasta 16
   dendrite_names<-gsub("api ","",dendrite_names)
 
-
-
-
   #Matrix of interval distance
   distancias <- matrix(0,nrow=nrow(model$data),ncol=1)
   for(i in 1:length(spine_name_split[,2])){

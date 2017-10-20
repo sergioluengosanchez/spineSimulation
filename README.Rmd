@@ -18,8 +18,6 @@ The dendritic spines of pyramidal neurons are the targets of most excitatory syn
 This software has been developed as an R package. Consequently, it is needed an R enviroment and internet connectivity to download additional package dependencies. R software can be downloaded from <http://cran.rstudio.com/index.html>. We suggested to install 64 bits version of R and RStudio (<https://www.rstudio.com/products/rstudio/download/>). 
 
 ## Package installation
-
-## Package installation
 Some R packages are needed to perform some specific tasks releated with 3D processing, data management, or modeling. They must be installed through the command `install.packages("name_of_the_package")` to be able to use simulateSpines. The R dependencies of the package are:
 
 |Package|Version|License|
