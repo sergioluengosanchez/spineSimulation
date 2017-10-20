@@ -1,7 +1,6 @@
 ---
 title: "Spine simulation User's Guide"
-author: "Sergio Luengo-Sanchez et al."
-date: "`r Sys.Date()`"
+author: "Luengo-Sanchez, Sergio et al."
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{Spine simulation}
@@ -18,6 +17,7 @@ The dendritic spines of pyramidal neurons are the targets of most excitatory syn
 This software has been developed as an R package. Consequently, it is needed an R enviroment and internet connectivity to download additional package dependencies. R software can be downloaded from <http://cran.rstudio.com/index.html>. We suggested to install 64 bits version of R and RStudio (<https://www.rstudio.com/products/rstudio/download/>). 
 
 ## Package installation
+
 Some R packages are needed to perform some specific tasks releated with 3D processing, data management, or modeling. They must be installed through the command `install.packages("name_of_the_package")` to be able to use simulateSpines. The R dependencies of the package are:
 
 |Package|Version|License|
@@ -51,16 +51,17 @@ Finally, to have accessed to the functionalities of simulateSpines you must load
 library(spineSimulation)
 ```
 
-After that, simulateSpines is loaded  in the R workspace so you can start to cluster dendritic spines and analyze the results. In the next section we show some cases of use to exploit the possibilities that the package provides. To test the package, a model and a dataset of morphological features (with some added white noise) are included as part of the package to try the functionalities.
+After that, simulateSpines is loaded  in the R workspace so you can start to cluster dendritic spines and analyze the results. In the next section we show some cases of use to exploit the possibilities that the package provides. To test the package, the model and the dataset of morphological features are included as part of the package to allow proper reproducibility.
 
 ## Using spineSimulation package
-Lets start writing `?spineSimulation`  into the R console. The page that appears in front of you provides general information about the package. Next, if you click on the hyperlink *Index* at the end of the page you will be redirected to the index page where you can see all the functions of the software and a short description of each one of them.
+
+Lets start writing `?spineSimulation` into the R console. The page that appears in front of you provides general information about the package. Next, if you click on the hyperlink *Index* at the end of the page you will be redirected to the index page where you can see all the functions of the software and a short description of each one of them.
 
 ### Clustering
-The common executing flow is based on obtaining a probabilistic clustering from the features computed on the surface of the spines with multiresolution Reeb graph. This dataset can be generated from the library [3DSpineMFE](https://github.com/ComputationalIntelligenceGroup/3DSpineMFE). Given a dataset, the model is computed according to the next line:
+The common executing flow is based on obtaining a probabilistic clustering from the features computed on the surface of the spines with multiresolution Reeb graph. This dataset can be generated from the library [3DSpineMFE](https://github.com/ComputationalIntelligenceGroup/3DSpineMFE). Given a dataset, probabilistic clustering is performed according to the next line:
 
 ```{r,eval=FALSE}
-spineClustering(csvSpines = system.file("extdata", "spineDataset.csv", package = "spineSimulation"), numClusters = c(2:10), scale = T)
+model <- spineClustering(csvSpines = system.file("extdata", "spineDataset.csv", package = "spineSimulation"), numClusters = c(2:10), scale = T)
 ```
 
 This computation can take several days so we provide the resulting model. Also enable the `scale` flag can increase the computational time considerably.
@@ -81,7 +82,7 @@ print(paste("The number of clusters is",model$G))
 
 ### MDS
 
-To make visualization and interpretation of the groups of dendritic spines easier, distance between clusters in a n-dimensional space can be scaled to a 2-dimensional space with multidimensional scaling. It represents the similarity between the morphology of the clusters. Clusters that are close in the MDS plot present analogous shapes. Additionally, in those cases where the cluster is represented just as a point that means that all the spines in the cluster belongs to that cluster with a probability close to 1. However, when there is a continuum of points between two clusters, it suggest that there are some spines whose morphology is a mix of the two clusters and cannot be assigned to any of them certainly.  
+To make visualization and interpretation of the groups of dendritic spines easier, distance between clusters in a n-dimensional space can be scaled to a 2-dimensional space with multidimensional scaling. It represents the similarity between the morphology of the clusters. Clusters that are close in the MDS plot present analogous shapes. Additionally, in those cases where the cluster is represented just as a point that means that all the spines in the cluster belongs to that cluster with a probability close to 1. However, when there is a continuum of points between two clusters, it suggests that there are some spines whose morphology is a mix of the two clusters and cannot be assigned to any of them certainly.  
 
 ```{r,fig.width=7.2,fig.height=7.2}
 MDS<-computeMDS(model,2)
@@ -89,24 +90,29 @@ plotMDS(model,MDS)
 ```
 
 ### Overlapping
-Ideally, clustering should find well defined clusters. Thus, overlapping between clusters is undesirable. To measure the overlapping between pairs of clusters the next function can be applied:
+
+Ideally, a clustering method should find well defined clusters. Thus, overlapping between clusters is undesirable. To measure the overlapping between pairs of clusters the next function can be applied:
 
 ```{r,eval=F}
 computeOverlapping(model)
 ```
+
 As result a table is generated where each value is the degree of overlapping between each pair of cluster where 1 is total overlapping and 0 that there is not overlap at all. As it can be expected, the diagonal of the table is 1 in all cases because it is measuring the overlapping of each cluster with itself.
+
 ```{r kable, echo=F}
 library(knitr)
 kable(computeOverlapping(model))
 ```
 
 ### Characterization of clusters
-To characterize each cluster according to its most representative features we use RIPPER each spine can be attributed to its most probable cluster turning the problem into a binary classification problem. Finding the rules that govern it cluster we obtain that characterization. We use the version implemented in Weka of RIPPER, that is, JRip. We provide a script to export spines with their cluster asignation to .arff format. If you are interested into replicate that experiment you can run:
+
+To characterize each cluster according to its most representative features we use RIPPER, a based rule classifier. To apply RIPPER each spine has to be attributed to its most probable cluster turning the problem into a binary classification problem. Finding the rules that govern it cluster we obtain its characterization. We use the version implemented in Weka of RIPPER, that is, JRip. We provide a script to export spines with their cluster asignation to .arff format. 
 ```{r,eval=F}
 generateArff('/path/to/folder/',model)
 ```
 
 ### Distributions of clusters
+
 To show the bar plot of the distribution of dendritic spines when they are crisply ascribed to a unique cluster and a dendritic compartment, age or combination of both are selected run:
 ```{r,fig.height=5,fig.width=8}
 plotGlobalDistribution(model)
@@ -116,6 +122,7 @@ plotCombination(model,system.file("extdata", "ageDataset.csv", package = "spineS
 ```
 
 To check if distribution of spines is independent of their dendritic compartment, age or combination of both we use a $\chi^2$ hypothesis test. To run the test execute:
+
 ```{r}
 chiSquareTest(model,"dendrite")
 chiSquareTest(model,"age",system.file("extdata", "ageDataset.csv", package = "spineSimulation"))
@@ -131,17 +138,24 @@ chiSquareTestCluster(model,"both",system.file("extdata", "ageDataset.csv", packa
 ```
 
 ### Distance from soma
+
 The analysis based on the distribution of dendritic spines as a function of their distance from soma can be tackled running the next line:
+
 ```{r,fig.height=5,fig.width=8, warning=FALSE}
 plotDistance2Soma(model,system.file("extdata", "distanceSpines2soma.csv", package = "spineSimulation"),6)
 chiSquareTestDistance(model,system.file("extdata", "distanceSpines2soma.csv", package = "spineSimulation"),6)
 ```
 
 ### Simulation 3D
-Finally, to generate virtual spines the user must run the following lines:
+
+Finally, to simulate 3D virtual spines the user must run the following lines:
+
 ```{r,eval=F}
 # Simulate 5 spines from the cluster 1 and render the second of them
+# Sample spines from the probability distribution
 newSpines <- spineSampling(model,nSpines=5,cluster=1,seed=1)
+# Generate the 3D of the sampled spine
 mesh <- simulation3Dmesh(newSpines,idx=2,iterations=4)
+# Render the spine
 shade3d(mesh,col="red")
 ```
