@@ -41,7 +41,7 @@ plotDistance2Soma<-function(model, distanceCSV, numIntervals)
   distanceDf$distance<-factor(as.character(distanceDf[,1]),levels=unique(distanceDf[,1]))
 
   ggplot(data=distanceDf,aes(distance,values,fill=as.factor(clusters)))+geom_bar(stat="identity",position="dodge")+
-    geom_errorbar(aes(x=distance,y=total, ymax=total, ymin=total), position = "dodge") + ylim(0,0.3) + ylab("Percentage") + xlab(expression(paste("Distance from soma in ",mu))) +
+    geom_errorbar(aes(x=distance, ymax=total, ymin=total), position = "dodge") + ylim(0,0.3) + ylab("Percentage") + xlab(expression(paste("Distance from soma in ",mu))) +
     guides(fill=guide_legend(title=NULL)) + #ggtitle("Distance to soma") +
     theme(plot.title=element_text(lineheight=.8,face="bold",size=20),axis.title.y =element_text(face="bold",size=16),axis.title.x =element_text(size=16),
           axis.text.x =element_text(size=14), axis.text.y =element_text(size=12), legend.text =element_text(size=12))
