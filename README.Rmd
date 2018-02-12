@@ -54,7 +54,7 @@ The common executing flow is based on obtaining a probabilistic clustering from 
 model <- spineClustering(csvSpines = system.file("extdata", "spineDataset.csv", package = "spineSimulation"), numClusters = c(2:10), scale = T)
 ```
 
-This computation can take several days so we provide the resulting model. Also enable the `scale` flag can increase the computational time considerably.
+This computation can take several days so we provide the resulting model. Also enable the `scale` flag can increase the computational time considerably. We provide the resulting probabilistic model as a binary R object so interested user can reproduce the experiments just running the below examples: 
 
 BIC score is the heuristic score used by the algorithm to select the number of clusters. The higher is the score, the better is the cluster. To plot the BIC score obtained for each number of the clusters evaluated during the clustering process you can run.
 
